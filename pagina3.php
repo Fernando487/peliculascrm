@@ -8,15 +8,26 @@
 <h3>Buscar Peliculas</h3>
 <form method="post" action="pagina4.php">
 	<label></label><br/>
-	<input type="text" name="nombre"/><br/>
+	<input type="text" name="nombre" placeholder="busqueda por nombre"/><br/>
 	<input type="submit" value="Buscar Pelicula">
 </form>
 <h2>Mostrar Listado de Peliculas</h2>
+<a href='index.php'>Añadir más</a>
+<hr>
+<br/>
 	<?php 
+	if (isset($_REQUEST['pos'])){
+	  $inicio=$_REQUEST['pos'];
+	}
+	else{
+	$inicio=0;
+	}
 	$conexion=mysql_connect("localhost","root","") or die("Error en la conexion");
 	mysql_select_db("peliculas",$conexion) or die("Error al seleccionar la bd");
-	$registros=mysql_query("select id,nombre,descripcion,codigogenero from nombre", $conexion) or die("Problemas en el select" .mysql_error());
+	$registros=mysql_query("select sql_calc_found_rows id,nombre,descripcion,codigogenero from nombre limit $inicio,2", $conexion) or die("Problemas en el select" .mysql_error());
+	$impresos=0;
 	while ($reg=mysql_fetch_array($registros)) {
+		 $impresos++;
 		echo "ID: ".$reg['id']."<br/>";
 		echo "Nombre: ".$reg['nombre']."<br/>";
 		echo "Descripcion: ".$reg['descripcion']."<br/>";
@@ -38,9 +49,8 @@
 		echo "<br/>";
 		echo "<form method='post' action='pagina3.php'>";
 		echo "<input type='hidden' name='id' value='$reg[id]'<br/> <input type='submit' value='borrar' name='borrar'/>";
+		echo "<input type='submit' value='editar' name='editar'/>";
 		echo "</form>";
-		echo"<br/>";
-		echo "<input type='submit' value='editar' name='editar'";
 		echo"<br/>";
 		echo "<hr>";
 	}
@@ -53,14 +63,34 @@
 		if ($fila=mysql_fetch_array($resultado))
 		{
 		  mysql_query("delete from nombre where id='$fila[id]'",$conexion) or die("Problemas en el select:".mysql_error());
-		  echo "Se efectuó el borrado del alumno con dicho mail.";
+		  echo "Se efectuó el borrado de la pelicula.";
+		  header("Location: http://peliculascrm.dev/pagina3.php");
 		}
 		else
 		{
-		  echo "No existe un alumno con ese mail.";
+		  echo "No existe la pelicula. <br/>";
 		}
 	}
+
+	if(isset($_POST['editar'])){
+		header("Location: http://peliculascrm.dev/editar.php");
+	}
+
 	mysql_close($conexion);
+	if ($inicio==0)
+	  	echo " ";
+		else
+		{
+		  $anterior=$inicio-1;
+		  echo "<a href=\"pagina3.php?pos=$anterior\">Anteriores </a>";
+		}
+		if ($impresos==2)
+		{
+		  $proximo=$inicio+1;
+		  echo "<a href=\"pagina3.php?pos=$proximo\">Siguientes</a>";
+		}
+		else
+		  echo "";
 	?>
 </body>
 </html>
